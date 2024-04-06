@@ -7,20 +7,25 @@ import time
 import hashlib
 import re
 import unicodedata
-
+import PyPDF2
 index_name = 'chatbot01'
+title = ''
 
 def process_pdf(file):
     loader = PyPDFLoader(file_path=file)
     documents = loader.load()
     return documents
 
-
-def split_docs(documents, chunk_size=500, chunk_overlap=50):
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap, separators=["\n\n", "\n", " ", ""])
-    docs = text_splitter.split_documents(documents)
-    return docs
-
+def preprocess_and_split(documents, chunk_size=500, chunk_overlap=125):
+    text_chunks = []
+    for doc in documents:
+        text = "".join(doc.page_content)
+        preprocessed_text = text_preprocessing(text)
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap, separators=["\n\n", "\n", " ", ""])
+        chunks = text_splitter.split_text(preprocessed_text)
+        #print(doc.metadata.get('title', 'Unknown Title'))
+        text_chunks.extend(chunks)
+    return text_chunks
 
 def generate_embeddings(text_chunks, model_name="all-MiniLM-L6-v2"):
     embeddings = HuggingFaceEmbeddings(model_name=model_name)
@@ -28,21 +33,18 @@ def generate_embeddings(text_chunks, model_name="all-MiniLM-L6-v2"):
     return text_embeddings
 
 def generate_id(text):
-  text_chunk = "".join(text)
-  text_chunk = text_chunk.lower().strip()
-  hash_object = hashlib.sha256(text_chunk.encode('utf-8'))
-  hash_value = hash_object.hexdigest()
-  return hash_value[:16]
+    text_chunk = "".join(text)
+    text_chunk = text_chunk.lower().strip()
+    hash_object = hashlib.sha256(text_chunk.encode('utf-8'))
+    hash_value = hash_object.hexdigest()
+    return hash_value[:16]
 
-def text_preprocessing(texts):
-    text = "".join(texts)
+def text_preprocessing(text):
     text = str(text).lower()
-    text = re.sub(r'\S*@\S*\s?', '', text)
-    text = re.sub(r'<.*?>', '', text)
-    text = re.sub(r'\n', '', text) 
+    text = re.sub(r'\S*@\S*\s?', ' ', text)
+    text = re.sub(r'<.*?>', ' ', text)
     text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').decode('utf-8', 'ignore')
     return text
-
 
 def create_index():
     pc = Pinecone(
@@ -61,25 +63,41 @@ def create_index():
     time.sleep(1)
     return index
 
-
 def process_and_index_pdf(pdf_file):
     document = process_pdf(pdf_file)
-    chunks = split_docs(document)
+    text_chunks = preprocess_and_split(document)
+    
     texts = []
     metadatas = [] 
-    for i, chunk in enumerate(chunks):
-        record_texts = text_preprocessing(chunk.page_content)
+    for i, chunk in enumerate(text_chunks):
         record_metadatas = [{
-            "text": record_texts,
-            "source": chunk.metadata.get('source')
+            "text": chunk,
+            "source": title
         }]
-        texts.extend(record_texts)
+        texts.extend(chunk)
         metadatas.extend(record_metadatas) 
         ids = generate_id(texts)
         embeds = generate_embeddings(texts)
-        index.upsert(vectors=zip(ids,embeds, metadatas))
+        index.upsert(vectors=zip(ids, embeds, metadatas))
         texts = []
-        metadatas = []  
+        metadatas = []
+    # Calculate and print percentage completion
+        completion_percentage = ((i + 1) / len(text_chunks)) * 100
+        print(f"Progress: {completion_percentage:.2f}% completed")
+
+def get_pdf_title(pdf_file_path):
+    try:
+        with open(pdf_file_path, 'rb') as file:
+            pdf_reader = PyPDF2.PdfReader(file)
+            if pdf_reader.metadata.title:
+                return pdf_reader.metadata.title
+            else:
+                print("Title not found in PDF metadata.")
+                return None
+    except Exception as e:
+        print("Error:", e)
+        return None
+
 
 
 if __name__ == "__main__":
@@ -88,12 +106,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     pdf_file = args.PDF_FILE
+    title = get_pdf_title(pdf_file)
     index = create_index()
     process_and_index_pdf(pdf_file)
     print("PDF indexing complete!")
 
 
-#python3 practice.py --PDF_FILE pdf_path
+#python3 practice.py --pdf_file=research_paper.pdf
 
 #Download library
   #pip install langchain_community
@@ -101,3 +120,4 @@ if __name__ == "__main__":
   #pip install pypdf
   # pip install --upgrade --quiet  sentence_transformers > /dev/null
   #pip install pinecone-client
+
