@@ -25,7 +25,7 @@ This repository contains Python code for indexing PDF documents using Pinecone, 
 1. Run the script:
 
    ```bash
-   python practice.py --PDF_FILE=path/to/your/pdf.pdf
+   python main.py --PDF_FILE=path/to/your/pdf.pdf
    ```
 
 2. Replace `path/to/your/pdf.pdf` with the actual path to your PDF file.
