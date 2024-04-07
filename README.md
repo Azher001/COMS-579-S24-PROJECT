@@ -15,7 +15,7 @@ This repository contains Python code for indexing PDF documents using Pinecone, 
 1. Install required libraries:
 
    ```bash
-   pip install langchain_community langchain pypdf sentence-transformers pinecone-client
+   pip install langchain_community langchain pypdf sentence-transformers pinecone-client PyPDF2
    ```
 
 2. Obtain a Pinecone API key from [https://www.pinecone.io/](https://www.pinecone.io/) and set it as the `PINECONE_API_KEY` environment variable.
