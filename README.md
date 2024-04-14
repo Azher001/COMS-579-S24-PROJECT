@@ -1,7 +1,8 @@
  **# COMS-579-S24-PROJECT**
 
 This repository contains Python code for indexing PDF documents using Pinecone, enabling efficient text retrieval.
-##CHECKPOINT1:
+
+## CHECKPOINT1:
 ## Features
 
 - Extracts text from PDFs using PyPDF2.
@@ -30,7 +31,15 @@ This repository contains Python code for indexing PDF documents using Pinecone, 
 
 2. Replace `path/to/your/pdf.pdf` with the actual path to your PDF file.
 
+## Checkpoint 2
 ## Retrive
+
+## Features
+
+- Retrive text data based on given query.
+- Uses gpt-3.5-turbo-0613 model to generate answer.
+
+  ## Usage
 1. Run the script
    ```bash
    python retrive.py --Open_AI_Key=YOUR_OPENAI_API_KEY --Query="Your Query Here"
