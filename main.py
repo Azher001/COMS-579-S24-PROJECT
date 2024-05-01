@@ -10,6 +10,7 @@ import unicodedata
 import PyPDF2
 index_name = 'chatbot01'
 title = ''
+index = None
 
 def process_pdf(file):
     loader = PyPDFLoader(file_path=file)
@@ -23,7 +24,6 @@ def preprocess_and_split(documents, chunk_size=500, chunk_overlap=125):
         preprocessed_text = text_preprocessing(text)
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap, separators=["\n\n", "\n", " ", ""])
         chunks = text_splitter.split_text(preprocessed_text)
-        #print(doc.metadata.get('title', 'Unknown Title'))
         text_chunks.extend(chunks)
     return text_chunks
 
@@ -93,12 +93,19 @@ def get_pdf_title(pdf_file_path):
                 return pdf_reader.metadata.title
             else:
                 print("Title not found in PDF metadata.")
-                return None
+                return 'None'
     except Exception as e:
         print("Error:", e)
-        return None
+        return 'None'
 
-
+def upload_file(file_path):
+    global title
+    global index
+    title = get_pdf_title(file_path)
+    index = create_index()
+    process_and_index_pdf(file_path)
+    print("PDF indexing complete!")
+    return "PDF indexing complete!"
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="PDF Indexing Tool")
@@ -106,10 +113,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     pdf_file = args.PDF_FILE
-    title = get_pdf_title(pdf_file)
-    index = create_index()
-    process_and_index_pdf(pdf_file)
-    print("PDF indexing complete!")
+    upload_file(pdf_file)
 
 
 #python3 practice.py --pdf_file=research_paper.pdf
