@@ -54,3 +54,28 @@ This repository contains Python code for indexing PDF documents using Pinecone, 
 3. Replace `Your Query Here` with the actual query. example of a query "What are NLP vs Speech related research?" 
 
 
+## Checkpoint 3
+## Gradio 
+
+## Installation
+
+1. Install gradio library:
+
+   ```bash
+   pip install gradio
+   ```
+
+## Features
+
+- Add pdf file using GUI.
+- Retrive text data based on user query using GUI.
+
+## Usage
+1. Run the script
+   ```bash
+   python gui.py 
+   ```
+2. Upload the file and then click on the submit button to upload file. 
+3. Enter your query and open AI api key and click on the Query button to generate answer.
+
+

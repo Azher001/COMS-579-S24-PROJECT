@@ -3,13 +3,13 @@ from main import upload_file
 from retrive import retriveQuery
 
 with gr.Blocks() as demo:
-    pdf_file = gr.File(label="Upload PDF file", file_types=["pdf"], type="filepath", file_count='single')
-    output = gr.Textbox(label="Status", type="text")
+    pdf_file_path = gr.File(label="Upload PDF file", file_types=["pdf"], type="filepath", file_count='single')
+    upload_status = gr.Textbox(label="Status", type="text")
     upload_button = gr.Button("Submit")
     upload_button.click(
             fn = upload_file,
-            inputs = pdf_file,
-            outputs = output
+            inputs = pdf_file_path,
+            outputs = upload_status
     )
 
 
